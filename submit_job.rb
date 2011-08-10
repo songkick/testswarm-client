@@ -153,11 +153,11 @@ $SUITES.each do |key, value|
   $query += "&suites[]=#{clean key}&urls[]=#{clean value}"
 end
 
-print "curl -d '#{$query}' #{$SWARM}" if $DEBUG
+puts "curl -d '#{$query}' #{$SWARM}" if $DEBUG
 $results = `curl -d '#{$query}' #{$SWARM}`
 
 if $results
-  print "Results: #{$results}" if $DEBUG
+  puts "Results: #{$results}" if $DEBUG
   File.open("results.txt", "w") { |f| f.write "#{$SWARM}\n#{$results}" }
 else
   raise "Job not submitted properly."
