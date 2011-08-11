@@ -19,6 +19,13 @@ describe TestSwarm::Project do
       project.submit_job("Job Name", job)
     end
     
+    it "passes options through when constructing the payload" do
+      params = {:name => "Job Name", :user => "skweb", :auth => "123abc", :browsers => "beta"}
+      job.should_receive(:payload).with(params).and_return("cgi-data")
+      FakeWeb.register_uri(:post, "http://testswarm.songkick.net/", :body => "/job/75/")
+      project.submit_job("Job Name", job, :browsers => "beta")
+    end
+    
     it "returns the ID of the job" do
       FakeWeb.register_uri(:post, "http://testswarm.songkick.net/", :body => "/job/75/")
       project.submit_job("Job Name", job).should == "75"
