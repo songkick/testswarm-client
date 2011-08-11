@@ -31,7 +31,7 @@ jobs, and may in future allow us to query the TestSwarm server.
     
     path = "#{client.host}/changeset/#{project.name}/#{job.revision}"
     ['FooSpec', 'BarSpec'].each do |spec|
-      job.add_suite(spec, "#{path}/spec/browser.html?spec=#{spec}Spec")
+      job.add_suite(spec, "#{path}/spec/browser.html?spec=#{spec}")
     end
     
     # Send the job to the server, giving a name, maximum run count, and which
