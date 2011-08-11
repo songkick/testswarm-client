@@ -137,14 +137,14 @@ module TestSwarm
       log "chdir #{@revision}"
       Dir.chdir(@revision)
       
-      if @build
-        [@build].flatten.each do |step|
-          log step
-          `#{step}`
-          unless $?.exitstatus.zero?
-            reset
-            raise BuildFailed, "Failed while running #{step}"
-          end
+      return unless @build
+      
+      [@build].flatten.each do |step|
+        log step
+        `#{step}`
+        unless $?.exitstatus.zero?
+          reset
+          raise BuildFailed, "Failed while running #{step}"
         end
       end
     end
@@ -174,6 +174,7 @@ module TestSwarm
     def log(message)
       FileUtils.mkdir_p(@directory)
       @logfile ||= File.open(File.join(@directory, 'testswarm.log'), 'a')
+      @logfile.sync = true
       @logfile.puts("[#{Time.now.strftime '%Y-%m-%d %H:%M:%S'}] #{message}")
     end
     
