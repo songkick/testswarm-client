@@ -6,8 +6,11 @@ require File.dirname(__FILE__) + '/job'
 require File.dirname(__FILE__) + '/project'
 
 module TestSwarm
+  
+  DEFAULT_BROWSERS = 'all'
+  DEFAULT_MAX      = 1
+  
   class Client
-    
     def initialize(url)
       @url = url
     end
@@ -21,5 +24,6 @@ module TestSwarm
     end
     
   end
+  
 end
 

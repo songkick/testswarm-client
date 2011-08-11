@@ -1,8 +1,7 @@
 module TestSwarm
   class Job
     
-    DEFAULT_BROWSERS = 'all'
-    DEFAULT_MAX      = 1
+    attr_reader :suites
     
     def initialize
       @suites = {}
@@ -10,33 +9,6 @@ module TestSwarm
     
     def add_suite(name, url)
       @suites[name] = url
-    end
-    
-    def payload(options = {})
-      params = {
-        'auth'     => options[:auth],
-        'browsers' => options[:browsers] || DEFAULT_BROWSERS,
-        'job_name' => options[:name],
-        'max'      => options[:max] || DEFAULT_MAX,
-        'output'   => 'dump',
-        'state'    => 'addjob',
-        'user'     => options[:user]
-      }
-      query  = ''
-      params.keys.sort.each do |key|
-        query += '&' unless query.empty?
-        query += "#{key}=#{escape params[key]}"
-      end
-      @suites.keys.sort.each do |name|
-        query += "&suites[]=#{escape name}&urls[]=#{escape @suites[name]}"
-      end
-      query
-    end
-    
-  private
-    
-    def escape(string)
-      CGI.escape(string.to_s)
     end
     
   end
