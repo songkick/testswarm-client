@@ -1,5 +1,3 @@
-require 'cgi'
-
 module TestSwarm
   class Job
     

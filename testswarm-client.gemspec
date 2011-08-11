@@ -11,6 +11,7 @@ Gem::Specification.new do |s|
   s.files             = %w(Gemfile README.rdoc) + Dir.glob("{lib,spec}/**/*")
   s.require_paths = ["lib"]
 
+  s.add_development_dependency("fakeweb")
   s.add_development_dependency("rspec")
 end
 
