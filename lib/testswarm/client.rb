@@ -1,4 +1,5 @@
 require 'cgi'
+require 'fileutils'
 require 'net/http'
 require 'uri'
 
