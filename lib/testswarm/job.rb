@@ -4,9 +4,8 @@ module TestSwarm
     DEFAULT_BROWSERS = 'all'
     DEFAULT_MAX      = 1
     
-    def initialize(project)
-      @project = project
-      @suites  = {}
+    def initialize
+      @suites = {}
     end
     
     def add_suite(name, url)
@@ -15,13 +14,13 @@ module TestSwarm
     
     def payload(options = {})
       params = {
-        'auth'     => @project.auth,
+        'auth'     => options[:auth],
         'browsers' => options[:browsers] || DEFAULT_BROWSERS,
         'job_name' => options[:name],
         'max'      => options[:max] || DEFAULT_MAX,
         'output'   => 'dump',
         'state'    => 'addjob',
-        'user'     => @project.name
+        'user'     => options[:user]
       }
       query  = ''
       params.keys.sort.each do |key|

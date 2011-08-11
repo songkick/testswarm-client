@@ -9,15 +9,17 @@ module TestSwarm
       @options = options
     end
     
-    def auth
-      @options[:auth]
-    end
-    
     def submit_job(name, job)
       http = Net::HTTP.start(@client.uri.host, @client.uri.port)
-      data = job.payload(:name => name)
+      data = job.payload(job_params(name))
       response = http.post('/', data)
       response.body.match(/\/job\/(\d+)\//)[1]
+    end
+    
+  private
+    
+    def job_params(name)
+      {:name => name, :user => @name, :auth => @options[:auth]}
     end
     
   end

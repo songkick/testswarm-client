@@ -1,18 +1,15 @@
 require "spec_helper"
 
 describe TestSwarm::Job do
-  let(:client)  { TestSwarm::Client.new("http://testswarm.songkick.net") }
-  let(:project) { client.project("skweb", :auth => "123abc") }
-  
   describe :paylooad do
     before do
-      @job = TestSwarm::Job.new(project)
+      @job = TestSwarm::Job.new
       @job.add_suite "Foo", "http://testswarm.songkick.net/changeset/skweb/1f7103f/test/browser.html?spec=FooSpec"
       @job.add_suite "Bar", "http://testswarm.songkick.net/changeset/skweb/1f7103f/test/browser.html?spec=BarSpec"
     end
     
     it "returns CGI-encoded data to be submitted to the server" do
-      @job.payload(:name => "Job Name").should == [
+      @job.payload(:name => "Job Name", :user => "skweb", :auth => "123abc").should == [
         "auth=123abc",
         "browsers=all",
         "job_name=Job+Name",
