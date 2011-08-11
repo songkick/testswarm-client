@@ -172,8 +172,9 @@ module TestSwarm
     end
     
     def log(message)
+      FileUtils.mkdir_p(@directory)
       @logfile ||= File.open(File.join(@directory, 'testswarm.log'), 'a')
-      @logfile.write(message)
+      @logfile.puts("[#{Time.now.strftime '%Y-%m-%d %H:%M:%S'}] #{message}")
     end
     
   end
