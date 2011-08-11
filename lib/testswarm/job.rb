@@ -20,6 +20,7 @@ module TestSwarm
       @build     = settings[:build]
       @inject    = settings[:inject]
       @keep      = settings[:keep]
+      @new       = true
       
       raise MissingConfig, "Required setting :rcs is missing" unless @rcs
       raise MissingConfig, "Required setting :rcs->:type is missing" unless @rcs[:type]
@@ -42,6 +43,10 @@ module TestSwarm
       end
     end
     
+    def new?
+      @new
+    end
+    
     def prepare!
       raise AlreadyPrepared if @prepared
       @prepared = true
@@ -52,7 +57,12 @@ module TestSwarm
       checkout_codebase
       determine_revision
       discard_old_releases
-      return reset if existing_job?
+      
+      if existing_job?
+        @new = false
+        return reset
+      end
+      
       build_project
       reset
     end

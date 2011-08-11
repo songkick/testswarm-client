@@ -60,6 +60,15 @@ describe TestSwarm::Project do
       FakeWeb.register_uri(:post, "http://testswarm.songkick.net/", :body => "/job/75/")
       project.submit_job("Job Name", job).should == "75"
     end
+    
+    describe "when the job is not new" do
+      before { job.stub(:new?).and_return(false) }
+      
+      it "does not submit a job to the server" do
+        Net::HTTP.should_not_receive(:start)
+        project.submit_job("Job Name", job)
+      end
+    end
   end
   
 end

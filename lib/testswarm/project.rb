@@ -33,6 +33,8 @@ module TestSwarm
     end
     
     def submit_job(name, job, options = {})
+      return nil unless job.new?
+      
       job.inject_script(@client.url + INJECT_SCRIPT)
       
       http = Net::HTTP.start(@client.uri.host, @client.uri.port)
