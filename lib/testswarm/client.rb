@@ -10,8 +10,11 @@ module TestSwarm
   
   DEFAULT_BROWSERS = 'all'
   DEFAULT_MAX      = 1
+  INJECT_SCRIPT    = '/js/inject.js'
   
   class Client
+    attr_reader :url
+    
     def initialize(url)
       @url = url
     end
@@ -23,7 +26,6 @@ module TestSwarm
     def uri
       @uri ||= URI.parse(@url)
     end
-    
   end
   
 end

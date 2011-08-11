@@ -38,12 +38,14 @@ describe TestSwarm::Project do
     let(:http)     { mock Net::HTTP }
     let(:response) { mock Net::HTTPOK }
     
+    before { job.stub(:inject_script) }
+    
     it "posts the job's CGI payload to the server" do
       Net::HTTP.should_receive(:start).with("testswarm.songkick.net", 80).and_return(http)
       params = {:name => "Job Name"}
       project.should_receive(:payload).with(job, params).and_return("cgi-data")
       http.should_receive(:post).with("/", "cgi-data").and_return(response)
-      response.should_receive(:body).and_return("/job/75/")
+      response.should_receive(:body).at_least(1).and_return("/job/75/")
       project.submit_job("Job Name", job)
     end
     

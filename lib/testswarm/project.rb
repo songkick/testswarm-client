@@ -1,6 +1,8 @@
 module TestSwarm
   class Project
     
+    class SubmissionFailed < StandardError ; end
+    
     attr_reader :name
     
     def initialize(client, name, options = {})
@@ -31,10 +33,25 @@ module TestSwarm
     end
     
     def submit_job(name, job, options = {})
+      job.inject_script(@client.url + INJECT_SCRIPT)
+      
       http = Net::HTTP.start(@client.uri.host, @client.uri.port)
       data = payload(job, job_params(name, options))
+      
+      job.log "POST #{@client.url} #{data}"
+      
       response = http.post('/', data)
-      response.body.match(/\/job\/(\d+)\//)[1]
+      job.log "Response: #{response.body}"
+      
+      matches = response.body.match(/\/job\/(\d+)\//)
+      unless matches
+        raise SubmissionFailed, "Server returned unexpected response: #{response.body}"
+      end
+      
+      job_id = matches[1]
+      job.log "Job ID: #{job_id}"
+      job.close_logfile
+      job_id
     end
     
   private

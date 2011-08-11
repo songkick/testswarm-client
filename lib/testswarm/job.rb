@@ -60,6 +60,32 @@ module TestSwarm
       @revision
     end
     
+    def inject_script(url)
+      return unless @inject
+      
+      log "chdir #{File.join @directory, revision}"
+      Dir.chdir(File.join(@directory, revision))
+      
+      Dir.glob(@inject).each do |path|
+        log "Injecting #{url} into #{path}"
+        html = File.read(path)
+        html.gsub! /<\/head>/, %Q{<script>document.write('<scr' + 'ipt src="#{url}?' + (new Date).getTime() + '"><\/scr' + 'ipt>');<\/script><\/head>}
+        File.open(path, 'w') { |f| f.write(html) }
+      end
+    end
+    
+    def close_logfile
+      @logfile.close if @logfile
+      @logfile = nil
+    end
+    
+    def log(message)
+      FileUtils.mkdir_p(@directory)
+      @logfile ||= File.open(File.join(@directory, 'testswarm.log'), 'a')
+      @logfile.sync = true
+      @logfile.puts("[#{Time.now.strftime '%Y-%m-%d %H:%M:%S'}] #{message}")
+    end
+    
   private
     
     def tmp_dir
@@ -165,17 +191,6 @@ module TestSwarm
     def restore_working_directory
       log "chdir #{@pwd}"
       Dir.chdir(@pwd)
-    end
-    
-    def close_logfile
-      @logfile.close if @logfile
-    end
-    
-    def log(message)
-      FileUtils.mkdir_p(@directory)
-      @logfile ||= File.open(File.join(@directory, 'testswarm.log'), 'a')
-      @logfile.sync = true
-      @logfile.puts("[#{Time.now.strftime '%Y-%m-%d %H:%M:%S'}] #{message}")
     end
     
   end
