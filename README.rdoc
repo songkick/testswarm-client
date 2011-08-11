@@ -6,8 +6,6 @@ jobs, and may in future allow us to query the TestSwarm server.
 
 == Example
 
-This is not implemented yet. Readme-driven development etc.
-    
     # Create a client to talk to the server, and get a reference to the project
     # you want to submit a job to.
     
