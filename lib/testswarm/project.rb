@@ -50,7 +50,6 @@ module TestSwarm
       
       job_id = matches[1]
       job.log "Job ID: #{job_id}"
-      job.close_logfile
       job_id
     end
     

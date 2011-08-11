@@ -19,6 +19,7 @@ module TestSwarm
       @directory = settings[:directory]
       @build     = settings[:build]
       @inject    = settings[:inject]
+      @keep      = settings[:keep]
       
       raise MissingConfig, "Required setting :rcs is missing" unless @rcs
       raise MissingConfig, "Required setting :rcs->:type is missing" unless @rcs[:type]
@@ -27,6 +28,8 @@ module TestSwarm
       raise MissingConfig, "Required setting :inject is missing" unless @inject
       
       @directory = File.expand_path(@directory)
+      
+      Kernel.at_exit { close_logfile }
     end
     
     def add_suite(name, url)
@@ -48,6 +51,7 @@ module TestSwarm
       enter_base_directory
       checkout_codebase
       determine_revision
+      discard_old_releases
       return reset if existing_job?
       build_project
       reset
@@ -72,11 +76,6 @@ module TestSwarm
         html.gsub! /<\/head>/, %Q{<script>document.write('<scr' + 'ipt src="#{url}?' + (new Date).getTime() + '"><\/scr' + 'ipt>');<\/script><\/head>}
         File.open(path, 'w') { |f| f.write(html) }
       end
-    end
-    
-    def close_logfile
-      @logfile.close if @logfile
-      @logfile = nil
     end
     
     def log(message)
@@ -152,6 +151,42 @@ module TestSwarm
       `git rev-parse --short HEAD`
     end
     
+    def discard_old_releases
+      return unless @keep
+      
+      log "chdir #{tmp_dir}"
+      Dir.chdir(tmp_dir)
+      
+      latest_commits = case @rcs[:type]
+                       when 'svn' then latest_svn_commits(@keep)
+                       when 'git' then latest_git_commits(@keep)
+                       end
+      
+      log "Keeping releases #{latest_commits.join ', '}"
+      
+      log "chdir #{@directory}"
+      Dir.chdir(@directory)
+      
+      Dir.entries(@directory).each do |entry|
+        next unless entry =~ /^[a-z0-9]+$/i
+        next if latest_commits.include?(entry)
+        
+        log "rm -rf #{entry}"
+        FileUtils.rm_rf(entry)
+      end
+    end
+    
+    def latest_svn_commits(n)
+      `svn log --limit 5`.strip.
+      split("\n").
+      grep(/^r\d+/).
+      map { |line| line.split(/^r|\s*\|\s*/)[1] }
+    end
+    
+    def latest_git_commits(n)
+      `git log --oneline | head -#{n} | cut -d ' ' -f 1`.strip.split("\n")
+    end
+    
     def existing_job?
       File.exists?(File.join(@directory, @revision))
     end
@@ -178,7 +213,6 @@ module TestSwarm
     def reset
       remove_tmp
       restore_working_directory
-      close_logfile
     end
     
     def remove_tmp
@@ -191,6 +225,11 @@ module TestSwarm
     def restore_working_directory
       log "chdir #{@pwd}"
       Dir.chdir(@pwd)
+    end
+    
+    def close_logfile
+      @logfile.close if @logfile
+      @logfile = nil
     end
     
   end
