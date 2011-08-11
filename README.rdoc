@@ -9,22 +9,21 @@ This is not implemented yet. Readme-driven development etc.
     client  = TestSwarm::Client.new('http://testswarm.songkick.net')
     project = client.project('my_project', :auth => 'abc123')
     
-    suites = {}
-    ['FooSpec', 'BarSpec'].each do |spec|
-      suites[spec] = "#{client.host}/changeset/#{project.name}/{REV}/spec/browser.html?spec=#{spec}Spec"
-    end
-    
     job = TestSwarm::Job.create(
-      :rcs      => {
-        :type   => 'git',
-        :url    => 'git://github.com/songkick/foo.git'
+      :rcs        => {
+        :type     => 'git',
+        :url      => 'git://github.com/songkick/foo.git'
       },
       
-      :base_dir => "/var/www/testswarm/changeset/#{project.name}",
-      :build    => 'coffee -c spec/',
-      :inject   => 'spec/*.html',
-      :suites   => suites
+      :directory  => "/var/www/testswarm/changeset/#{project.name}",
+      :build      => 'coffee -c spec/',
+      :inject     => 'spec/*.html'
     )
     
-    project.submit_job('My Commit #{REV}', job, :max => 5, :browsers => 'all')
+    path = "#{client.host}/changeset/#{project.name}/#{job.revision}"
+    ['FooSpec', 'BarSpec'].each do |spec|
+      job.add_suite(spec, "#{path}/spec/browser.html?spec=#{spec}Spec")
+    end
+    
+    project.submit_job("My Commit #{job.revision}", job, :max => 5, :browsers => 'all')
 
