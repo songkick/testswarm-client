@@ -1,14 +1,18 @@
 module TestSwarm
   class Job
     
-    attr_reader :suites
-    
     def initialize
       @suites = {}
     end
     
     def add_suite(name, url)
       @suites[name] = url
+    end
+    
+    def each_suite
+      @suites.keys.sort.each do |name|
+        yield(name, @suites[name])
+      end
     end
     
   end

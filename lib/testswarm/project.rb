@@ -24,8 +24,8 @@ module TestSwarm
         query += '&' unless query.empty?
         query += "#{key}=#{escape params[key]}"
       end
-      job.suites.keys.sort.each do |name|
-        query += "&suites[]=#{escape name}&urls[]=#{escape job.suites[name]}"
+      job.each_suite do |name, url|
+        query += "&suites[]=#{escape name}&urls[]=#{escape url}"
       end
       query
     end
