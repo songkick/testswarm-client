@@ -130,6 +130,19 @@ module TestSwarm
     def checkout_git_codebase
       log "git clone #{@rcs[:url]} #{tmp_dir}"
       `git clone #{@rcs[:url]} #{tmp_dir}`
+      
+      log "chdir #{tmp_dir}"
+      Dir.chdir(tmp_dir)
+      
+      if @rcs[:branch]
+        log "git checkout origin/#{@rcs[:branch]}"
+        `git checkout origin/#{@rcs[:branch]}`
+      end
+      log "git submodule update --init --recursive"
+      `git submodule update --init --recursive`
+      
+      log "chdir #{@directory}"
+      Dir.chdir(@directory)
     end
     
     def determine_revision
