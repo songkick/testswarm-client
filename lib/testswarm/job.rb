@@ -55,6 +55,9 @@ module TestSwarm
       @pwd = Dir.pwd
       
       enter_base_directory
+      
+      return @new = false unless acquire_lock
+      
       checkout_codebase
       determine_revision
       discard_old_releases
@@ -108,6 +111,20 @@ module TestSwarm
       
       log "chdir #{@directory}"
       Dir.chdir(@directory)
+    end
+    
+    def acquire_lock
+      if File.exist?('.lock')
+        log "Locked, marking job as not new"
+        return false
+      end
+      
+      log "Writing lock to #{@directory}/.lock"
+      File.open('.lock', 'w') do |f|
+        f.sync = true
+        f.write('')
+      end
+      true
     end
     
     def checkout_codebase
@@ -284,6 +301,7 @@ module TestSwarm
     def reset
       remove_tmp
       restore_working_directory
+      release_lock
     end
     
     def remove_tmp
@@ -296,6 +314,11 @@ module TestSwarm
     def restore_working_directory
       log "chdir #{@pwd}"
       Dir.chdir(@pwd)
+    end
+    
+    def release_lock
+      log "rm #{@directory}/.lock"
+      FileUtils.rm("#{@directory}/.lock")
     end
     
     def close_logfile
