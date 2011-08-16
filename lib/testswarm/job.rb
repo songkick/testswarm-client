@@ -17,6 +17,7 @@ module TestSwarm
       @suites    = {}
       @rcs       = settings[:rcs]
       @directory = settings[:directory]
+      @diff      = settings[:diff]
       @build     = settings[:build]
       @inject    = settings[:inject]
       @keep      = settings[:keep]
@@ -58,7 +59,7 @@ module TestSwarm
       determine_revision
       discard_old_releases
       
-      if existing_job?
+      if existing_job? or not javascript_changed?
         @new = false
         return reset
       end
@@ -154,6 +155,7 @@ module TestSwarm
       
       @revision.strip!
       log "Revision: #{@revision}"
+      log "Previous: #{@previous_revision}" if @previous_revision
       
       if @revision.empty?
         reset
@@ -165,11 +167,21 @@ module TestSwarm
     end
     
     def determine_svn_revision
+      @previous_revision = Dir.entries(@directory).
+                           grep(/^\d+$/).
+                           sort_by { |s| s.to_i }.
+                           last
+      
       log "svn info | grep Revision"
       `svn info | grep Revision`.gsub(/Revision: /, '')
     end
     
     def determine_git_revision
+      @previous_revision = Dir.entries(@directory).
+                           grep(/^[0-9a-f]+$/).
+                           sort_by { |s| latest_git_commits(100).index(s) }.
+                           first
+      
       log "git rev-parse --short HEAD"
       `git rev-parse --short HEAD`
     end
@@ -214,7 +226,43 @@ module TestSwarm
       File.exists?(File.join(@directory, @revision))
     end
     
+    def javascript_changed?
+      return true unless @diff and @previous_revision
+      
+      log "chdir #{tmp_dir}"
+      Dir.chdir(tmp_dir)
+      
+      [@diff].flatten.each do |pattern|
+        return true if javascript_changed_in?(pattern)
+      end
+      false
+    end
+    
+    def javascript_changed_in?(pattern)
+      case @rcs[:type]
+      when 'svn' then javascript_changed_in_svn?(pattern)
+      when 'git' then javascript_changed_in_git?(pattern)
+      end
+    end
+    
+    def javascript_changed_in_svn?(pattern)
+      counter = "svn diff -r #{@previous_revision}:#{@revision} | grep 'Index:' | grep '#{pattern}' | wc -l"
+      count = `#{counter}`
+      log "#{counter} -> #{count}"
+      count.strip.to_i > 0
+    end
+    
+    def javascript_changed_in_git?(pattern)
+      counter = "git diff --stat #{@previous_revision} HEAD | grep '#{pattern}' | wc -l"
+      count = `#{counter}`
+      log "#{counter} -> #{count}"
+      count.strip.to_i > 0
+    end
+    
     def build_project
+      log "chdir #{@directory}"
+      Dir.chdir(@directory)
+      
       log "mv #{tmp_dir} #{@revision}"
       FileUtils.mv(tmp_dir, @revision)
       
