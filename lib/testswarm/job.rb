@@ -194,9 +194,10 @@ module TestSwarm
     end
     
     def determine_git_revision
+      latest = latest_git_commits(100)
       @previous_revision = Dir.entries(@directory).
                            grep(/^[0-9a-f]+$/).
-                           sort_by { |s| latest_git_commits(100).index(s) }.
+                           sort_by { |s| latest.index(s) || 1000 }.
                            first
       
       log "git rev-parse --short HEAD"
