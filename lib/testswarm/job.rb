@@ -294,6 +294,7 @@ module TestSwarm
         `#{step}`
         unless $?.exitstatus.zero?
           reset
+          log "Failed while running #{step}"
           raise BuildFailed, "Failed while running #{step}"
         end
       end
