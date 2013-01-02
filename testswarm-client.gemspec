@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files  = %w(README.rdoc)
   s.rdoc_options      = %w(--main README.rdoc)
 
-  s.files             = %w(Gemfile README.rdoc) + Dir.glob("{lib,spec}/**/*")
+  s.files             = %w(README.rdoc) + Dir.glob("{lib,spec}/**/*")
   s.require_paths     = ["lib"]
 
   s.add_development_dependency("fakeweb")
