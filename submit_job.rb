@@ -125,10 +125,10 @@ end
 
 Dir.glob($INJECT_FILE).each do |file|
   inject_file = `cat #{file}`
-  
+
   # Inject the TestSwarm injection script into the test suite
   inject_file.gsub! /<\/head>/, %Q{<script>document.write("<scr" + "ipt src='#{$SWARM}#{$SWARM_INJECT}?" + (new Date).getTime() + "'><\/scr" + "ipt>");<\/script><\/head>}
-  
+
   File.open(file, "w") { |f| f.write(inject_file) }
 end
 

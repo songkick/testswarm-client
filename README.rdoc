@@ -8,34 +8,34 @@ jobs, and may in future allow us to query the TestSwarm server.
 
     # Create a client to talk to the server, and get a reference to the project
     # you want to submit a job to.
-    
+
     client  = TestSwarm::Client.new('http://testswarm.songkick.net')
     project = client.project('my_project', :auth => 'abc123')
-    
+
     # Create the job. This checks the project out of version control, creates a
     # snapshot, builds the project and determines its revision ID.
-    
+
     job = TestSwarm::Job.create(
       :rcs        => {
         :type     => 'git',
         :url      => 'git://github.com/songkick/foo.git'
       },
-      
+
       :directory  => "/var/www/testswarm/changeset/#{project.name}",
       :build      => 'coffee -c spec/',
       :inject     => 'spec/*.html'
     )
-    
+
     # Add test suites to the job. A test suite has a name and a URL. We can use
     # the revision number to build the path to our test files.
-    
+
     path = "#{client.url}/changeset/#{project.name}/#{job.revision}"
     ['FooSpec', 'BarSpec'].each do |spec|
       job.add_suite(spec, "#{path}/spec/browser.html?spec=#{spec}")
     end
-    
+
     # Send the job to the server, giving a name, maximum run count, and which
     # browsers to run the job in. Returns the TestSwarm job ID if the job is new.
-    
+
     project.submit_job("My Commit #{job.revision}", job, :max => 5, :browsers => 'all')
 

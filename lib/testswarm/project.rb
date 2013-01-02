@@ -1,16 +1,16 @@
 module TestSwarm
   class Project
-    
+
     class SubmissionFailed < StandardError ; end
-    
+
     attr_reader :name
-    
+
     def initialize(client, name, options = {})
       @client  = client
       @name    = name
       @options = options
     end
-    
+
     def payload(job, params = {})
       cgi = {
         'action'        => 'addjob',
@@ -36,15 +36,15 @@ module TestSwarm
       end
       query
     end
-    
+
     def submit_job(name, job, options = {})
       job.inject_script(@client.url + INJECT_SCRIPT)
-      
+
       http = Net::HTTP.start(@client.uri.host, @client.uri.port)
       data = payload(job, job_params(name, options))
-      
+
       job.log "POST #{@client.url} #{data}"
-      
+
       response = http.post('/api.php', data)
       job.log "Response: #{response.body}"
       job_data = JSON.parse(response.body)['addjob'] rescue nil
@@ -57,7 +57,7 @@ module TestSwarm
 
       job.log "Job ID: #{job_data['id']}"
       job.log "Runs: #{job_data['runTotal']}, user agents: #{job_data['uaTotal']}"
-      
+
       job_data['id'].to_s
 
     rescue => e
@@ -65,17 +65,17 @@ module TestSwarm
       job.log e.message
       job.log e.backtrace
     end
-    
+
   private
-    
+
     def escape(string)
       CGI.escape(string.to_s)
     end
-    
+
     def job_params(name, options)
       options.merge(:name => name)
     end
-    
+
   end
 end
 
