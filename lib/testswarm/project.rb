@@ -12,22 +12,27 @@ module TestSwarm
     end
     
     def payload(job, params = {})
-      params = {
-        'auth'     => @options[:auth],
-        'browsers' => params[:browsers] || DEFAULT_BROWSERS,
-        'job_name' => params[:name],
-        'max'      => params[:max] || DEFAULT_MAX,
-        'output'   => 'dump',
-        'state'    => 'addjob',
-        'user'     => @name
+      cgi = {
+        'action'        => 'addjob',
+        'authUsername'  => @name,
+        'authToken'     => @options[:auth],
+        'jobName'       => params[:name],
+        'runMax'        => params[:max] || DEFAULT_MAX
       }
-      query  = ''
-      params.keys.sort.each do |key|
+
+      query = ''
+      cgi.keys.sort.each do |key|
         query += '&' unless query.empty?
-        query += "#{key}=#{escape params[key]}"
+        query += "#{key}=#{escape cgi[key]}"
       end
+
+      browsers = [params[:browsers] || DEFAULT_BROWSERS].flatten
+      browsers.each do |browser|
+        query += "&browserSets[]=#{escape browser}"
+      end
+
       job.each_suite do |name, url|
-        query += "&suites[]=#{escape name}&urls[]=#{escape url}"
+        query += "&runNames[]=#{escape name}&runUrls[]=#{escape url}"
       end
       query
     end
@@ -40,17 +45,25 @@ module TestSwarm
       
       job.log "POST #{@client.url} #{data}"
       
-      response = http.post('/', data)
+      response = http.post('/api.php', data)
       job.log "Response: #{response.body}"
-      
-      matches = response.body.match(/\/job\/(\d+)\//)
-      unless matches
-        raise SubmissionFailed, "Server returned unexpected response: #{response.body}"
+      job_data = JSON.parse(response.body)['addjob'] rescue nil
+
+      unless job_data
+        job.log 'Job submission failed'
+        job.log response.body
+        return nil
       end
+
+      job.log "Job ID: #{job_data['id']}"
+      job.log "Runs: #{job_data['runTotal']}, user agents: #{job_data['uaTotal']}"
       
-      job_id = matches[1]
-      job.log "Job ID: #{job_id}"
-      job_id
+      job_data['id'].to_s
+
+    rescue => e
+      job.log 'Job submission failed'
+      job.log e.message
+      job.log e.backtrace
     end
     
   private
