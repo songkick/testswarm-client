@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name              = "testswarm-client"
-  s.version           = "0.2.0"
+  s.version           = "0.2.1"
   s.summary           = "Client library for Mozilla TestSwarm"
   s.author            = "James Coglan"
   s.email             = "jcoglan@gmail.com"

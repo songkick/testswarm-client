@@ -15,8 +15,8 @@ describe TestSwarm::Project do
     it "returns CGI-encoded data to be submitted to the server" do
       project.payload(job, :name => "Job Name").should == [
         "action=addjob",
+        "authID=skweb",
         "authToken=123abc",
-        "authUsername=skweb",
         "jobName=Job+Name",
         "runMax=1",
         "browserSets[]=all",
