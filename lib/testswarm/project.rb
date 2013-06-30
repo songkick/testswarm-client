@@ -13,11 +13,11 @@ module TestSwarm
 
     def payload(job, params = {})
       cgi = {
-        'action'        => 'addjob',
-        'authUsername'  => @name,
-        'authToken'     => @options[:auth],
-        'jobName'       => params[:name],
-        'runMax'        => params[:max] || DEFAULT_MAX
+        'action'    => 'addjob',
+        'authID'    => @name,
+        'authToken' => @options[:auth],
+        'jobName'   => params[:name],
+        'runMax'    => params[:max] || DEFAULT_MAX
       }
 
       query = ''
